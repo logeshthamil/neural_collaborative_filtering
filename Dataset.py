@@ -1,9 +1,7 @@
-'''
-Created on Aug 8, 2016
-Processing datasets. 
+"""
+Processing datasets.
+"""
 
-@author: Xiangnan He (xiangnanhe@gmail.com)
-'''
 import scipy.sparse as sp
 import numpy as np
 

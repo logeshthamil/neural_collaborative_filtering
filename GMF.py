@@ -9,8 +9,8 @@ from keras.models import Model
 from keras.layers import Embedding, Input, Dense, merge, Flatten
 from keras.optimizers import Adagrad, Adam, SGD, RMSprop
 from keras.regularizers import l2
-from .Dataset import Dataset
-from .evaluate import evaluate_model
+from Dataset import Dataset
+from evaluate import evaluate_model
 from time import time
 import argparse
 

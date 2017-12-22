@@ -10,11 +10,11 @@ from keras.regularizers import l2
 from keras.models import Model
 from keras.layers import Embedding, Input, Dense, merge, Flatten
 from keras.optimizers import Adagrad, Adam, SGD, RMSprop
-from .evaluate import evaluate_model
-from .Dataset import Dataset
+from evaluate import evaluate_model
+from Dataset import Dataset
 from time import time
-from .GMF import get_model as get_model_gmf
-from .MLP import get_model as get_model_mlp
+from GMF import get_model as get_model_gmf
+from MLP import get_model as get_model_mlp
 import argparse
 
 
@@ -23,9 +23,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Run NeuMF.")
     parser.add_argument('--path', nargs='?', default='data/',
                         help='Input data path.')
-    parser.add_argument('--dataset', nargs='?', default='ml-1m',
+    parser.add_argument('--dataset', nargs='?', default='ml-1m_temp',
                         help='Choose a dataset.')
-    parser.add_argument('--epochs', type=int, default=2,
+    parser.add_argument('--epochs', type=int, default=100,
                         help='Number of epochs.')
     parser.add_argument('--batch_size', type=int, default=256,
                         help='Batch size.')
@@ -175,7 +175,7 @@ if __name__ == '__main__':
     dataset = Dataset(args.path + args.dataset)
     train, testRatings, testNegatives = dataset.trainMatrix, dataset.testRatings, dataset.testNegatives
     num_users, num_items = train.shape
-    print("Load data done [%.1f s]. #user=%d, #item=%d, #train=%d, #test=%d"
+    print("\nLoad data done [%.1f s]. #user=%d, #item=%d, #train=%d, #test=%d"
           % (time() - t1, num_users, num_items, train.nnz, len(testRatings)))
 
     # Build model
@@ -199,12 +199,12 @@ if __name__ == '__main__':
         print("Load pretrained GMF (%s) and MLP (%s) models done. " % (mf_pretrain, mlp_pretrain))
 
     # Init performance
-    (hits, ndcgs) = evaluate_model(model, testRatings, testNegatives, topK, evaluation_threads)
-    hr, ndcg = np.array(hits).mean(), np.array(ndcgs).mean()
-    print('Init: HR = %.4f, NDCG = %.4f' % (hr, ndcg))
-    best_hr, best_ndcg, best_iter = hr, ndcg, -1
-    if args.out > 0:
-        model.save_weights(model_out_file, overwrite=True)
+    # (hits, ndcgs) = evaluate_model(model, testRatings, testNegatives, topK, evaluation_threads)
+    # hr, ndcg = np.array(hits).mean(), np.array(ndcgs).mean()
+    # print('Init: HR = %.4f, NDCG = %.4f' % (hr, ndcg))
+    # best_hr, best_ndcg, best_iter = hr, ndcg, -1
+    # if args.out > 0:
+    #     model.save_weights(model_out_file, overwrite=True)
 
         # Training model
     for epoch in range(num_epochs):
@@ -213,22 +213,32 @@ if __name__ == '__main__':
         user_input, item_input, labels = get_train_instances(train, num_negatives)
 
         # Training
+        print(len(user_input))
+        print(len(item_input))
+        print(labels)
+        labels[111] = 5
+        labels[10] = 5
+        labels[11] = 5
+        labels[190] = 5
         hist = model.fit([np.array(user_input), np.array(item_input)],  # input
                          np.array(labels),  # labels
                          batch_size=batch_size, nb_epoch=1, verbose=0, shuffle=True)
         t2 = time()
+        break
 
         # Evaluation
-        if epoch % verbose == 0:
-            (hits, ndcgs) = evaluate_model(model, testRatings, testNegatives, topK, evaluation_threads)
-            hr, ndcg, loss = np.array(hits).mean(), np.array(ndcgs).mean(), hist.history['loss'][0]
-            print('Iteration %d [%.1f s]: HR = %.4f, NDCG = %.4f, loss = %.4f [%.1f s]'
-                  % (epoch, t2 - t1, hr, ndcg, loss, time() - t2))
-            if hr > best_hr:
-                best_hr, best_ndcg, best_iter = hr, ndcg, epoch
-                if args.out > 0:
-                    model.save_weights(model_out_file, overwrite=True)
+        # if epoch % verbose == 0:
+        #     (hits, ndcgs) = evaluate_model(model, testRatings, testNegatives, topK, evaluation_threads)
+        #     hr, ndcg, loss = np.array(hits).mean(), np.array(ndcgs).mean(), hist.history['loss'][0]
+        #     print('Iteration %d [%.1f s]: HR = %.4f, NDCG = %.4f, loss = %.4f [%.1f s]'
+        #           % (epoch, t2 - t1, hr, ndcg, loss, time() - t2))
+        #     if hr > best_hr:
+        #         best_hr, best_ndcg, best_iter = hr, ndcg, epoch
+        #         if args.out > 0:
+        #             model.save_weights(model_out_file, overwrite=True)
 
-    print("End. Best Iteration %d:  HR = %.4f, NDCG = %.4f. " % (best_iter, best_hr, best_ndcg))
-    if args.out > 0:
-        print("The best NeuMF model is saved to %s" % (model_out_file))
+    print(model.predict([np.asarray([0, 0, 0, 0, 0]), np.array([32, 34, 4, 35, 360])], batch_size=10, verbose=0))
+    #
+    # print("End. Best Iteration %d:  HR = %.4f, NDCG = %.4f. " % (best_iter, best_hr, best_ndcg))
+    # if args.out > 0:
+    #     print("The best NeuMF model is saved to %s" % (model_out_file))

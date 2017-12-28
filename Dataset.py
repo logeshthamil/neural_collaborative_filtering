@@ -1,5 +1,6 @@
 """
 Processing datasets.
+@author: Xiangnan He (xiangnanhe@gmail.com)
 """
 
 import scipy.sparse as sp

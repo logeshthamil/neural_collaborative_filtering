@@ -1,6 +1,7 @@
 """
 Keras Implementation of Neural Matrix Factorization (NeuMF) recommender model in:
 He Xiangnan et al. Neural Collaborative Filtering. In WWW 2017.
+@author: Xiangnan He (xiangnanhe@gmail.com)
 """
 
 import numpy as np

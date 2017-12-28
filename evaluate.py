@@ -4,6 +4,7 @@ Evaluate the performance of Top-K recommendation:
     Measures: Hit Ratio and NDCG
     (more details are in: Xiangnan He, et al. Fast Matrix Factorization for Online Recommendation with
     Implicit Feedback. SIGIR'16)
+    @author: Xiangnan He (xiangnanhe@gmail.com)
 """
 
 import math
